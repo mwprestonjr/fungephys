@@ -158,6 +158,9 @@ def join_epochs_with_gap(epochs, min_gap):
     epochs_clean : numpy array
         Nx2 array containing the start and end times of the remaining epochs.
     """
+    # check inputs
+    if np.ndim(epochs) != 2:
+        return epochs
 
     epochs_clean = []
     for ii in range(epochs.shape[0] - 1):
@@ -218,7 +221,7 @@ def drop_short_epochs(epochs, min_duration):
         2D array of epochs, with epochs shorter than `min_duration` removed.
     """
     # handle cases of missing epochs
-    if len(epochs)==0:
+    if np.ndim(epochs) !=2:
         return epochs
 
     # get duration of epochs
