@@ -20,10 +20,23 @@ import time
 # Settings
 DIR_OUT = "20240924" # Output folder within data/recordings
 FS = 100 # Sampling frequency in milliseconds)
-CHANNEL = 9 # Channel to record from - script written for diferential recording
+CHANNEL = 9 # Channel to record from - script written for diferential recording so this is the odd-numbered channel
 N_SAMPLES = 6000 # Number of samples to record
 N_SAMPLES_CHUNK = 300 # Number of samples to record before saving to file
-VMAX = 39000  # Maximum voltage in microvolts
+VMAX = 39000  # Maximum voltage in microvolts (Mishra et al. 2024 used 39000)
+VOLTAGE_RANGE = 39 # Voltage range in millivolts
+
+# create function that maps these valtages to the corresponding values
+def voltage_key(s):
+    return {
+        39: 6,
+        78: 5,
+        156: 4,
+        313: 3,
+        625: 2,
+        1250: 1,
+        2500: 0
+    }[s]
 
 # Create chandle and status ready for use
 chandle = ctypes.c_int16()
@@ -39,7 +52,7 @@ status["mainsRejection"] = hrdl.HRDLSetMains(chandle, 0)
 assert_pico2000_ok(status["mainsRejection"])
 
 # Set single reading parameters
-range_ = hrdl.HRDL_VOLTAGERANGE["HRDL_39_MV"]
+range_ = hrdl.HRDL_VOLTAGERANGE[f"HRDL_{VOLTAGE_RANGE}_MV"]
 conversionTime = hrdl.HRDL_CONVERSIONTIME[f"HRDL_{FS}MS"]
 overflow = ctypes.c_int16(0)
 value = ctypes.c_int32()
@@ -58,6 +71,14 @@ max_ADC_Value = max_value.value
 V = (raw_ADC_value / max_ADC_Value) * VMAX
 print("Voltage:", V)
 
+# Disable corresponding even-numbered channel to enable differential recording
+status["disableDifferentialChannel"] = \
+    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 0, 
+                                voltage_key(VOLTAGE_RANGE), 0)
+status["disableDifferentialChannel"] = \
+    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 1, 
+                                voltage_key(VOLTAGE_RANGE), 0)
+
 # Initialize data saving parameters
 save_data = []
 start_time = time.time()
@@ -73,7 +94,7 @@ for i in range(N_SAMPLES):
     V = (float(value_data) / float(max_ADC_Value)) * float(VMAX)
     
     if (i + 1) % N_SAMPLES_CHUNK == 0:
-        np.savetxt(f"../data/recordings/{DIR_OUT}/{count}.txt", save_data, 
+        np.savetxt(f"data/recordings/{DIR_OUT}/{count}.txt", save_data, 
                    delimiter=',')
         print(f"Saved chunk {count} at sample {i+1}")
         count += 1
