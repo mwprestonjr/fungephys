@@ -26,6 +26,14 @@ N_SAMPLES_CHUNK = 300 # Number of samples to record before saving to file
 VMAX = 39000  # Maximum voltage in microvolts (Mishra et al. 2024 used 39000)
 VOLTAGE_RANGE = 39 # Voltage range in millivolts
 
+# Print status
+print("\nRecording settings:")
+print(f"  Recording from channel {CHANNEL} in differential mode")
+print(f"  Voltage range: {VOLTAGE_RANGE} mV")
+print(f"  Recording {N_SAMPLES} samples in chunks of {N_SAMPLES_CHUNK}")
+print(f"  Total recording time: {N_SAMPLES * FS / 1000} seconds")
+print(f"  Saving data to data/recordings/{DIR_OUT}")
+
 # create function that maps these valtages to the corresponding values
 def voltage_key(s):
     return {
@@ -51,7 +59,16 @@ chandle = status["openUnit"]
 status["mainsRejection"] = hrdl.HRDLSetMains(chandle, 0)
 assert_pico2000_ok(status["mainsRejection"])
 
+# Disable corresponding even-numbered channel to enable differential recording
+status["disableDifferentialChannel"] = \
+    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 0, 
+                                voltage_key(VOLTAGE_RANGE), 0)
+status["disableDifferentialChannel"] = \
+    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL, 1, 
+                                voltage_key(VOLTAGE_RANGE), 0)
+
 # Set single reading parameters
+print("\nComputing voltage scaling...")
 range_ = hrdl.HRDL_VOLTAGERANGE[f"HRDL_{VOLTAGE_RANGE}_MV"]
 conversionTime = hrdl.HRDL_CONVERSIONTIME[f"HRDL_{FS}MS"]
 overflow = ctypes.c_int16(0)
@@ -62,22 +79,14 @@ max_value = ctypes.c_int32()
 min_value = ctypes.c_int32()
 hrdl.HRDLGetMinMaxAdcCounts(chandle, ctypes.byref(min_value), 
                             ctypes.byref(max_value), CHANNEL)
-print("Max ADC Value:", max_value.value)
-print("Min ADC Value:", min_value.value)
+print("  Max ADC Value:", max_value.value)
+print("  Min ADC Value:", min_value.value)
 
 # Calculate voltage from ADC value
 raw_ADC_value = value.value
 max_ADC_Value = max_value.value
 V = (raw_ADC_value / max_ADC_Value) * VMAX
-print("Voltage:", V)
-
-# Disable corresponding even-numbered channel to enable differential recording
-status["disableDifferentialChannel"] = \
-    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 0, 
-                                voltage_key(VOLTAGE_RANGE), 0)
-status["disableDifferentialChannel"] = \
-    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL, 1, 
-                                voltage_key(VOLTAGE_RANGE), 0)
+print("  Voltage:", V)
 
 # Initialize data saving parameters
 save_data = []
@@ -85,6 +94,7 @@ start_time = time.time()
 count = 0
 
 # Collect and save data in chunks of 300 samples
+print("\nRecording data...")
 for i in range(N_SAMPLES):
     status["getSingleValue"] = hrdl.HRDLGetSingleValue(
         chandle, CHANNEL, range_, conversionTime, 0, ctypes.byref(overflow), 
@@ -96,7 +106,7 @@ for i in range(N_SAMPLES):
     if (i + 1) % N_SAMPLES_CHUNK == 0:
         np.savetxt(f"data/recordings/{DIR_OUT}/{count}.txt", save_data, 
                    delimiter=',')
-        print(f"Saved chunk {count} at sample {i+1}")
+        print(f"  Saved chunk {count} at sample {i+1}")
         count += 1
         save_data = []
 
