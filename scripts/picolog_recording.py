@@ -76,7 +76,7 @@ status["disableDifferentialChannel"] = \
     hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 0, 
                                 voltage_key(VOLTAGE_RANGE), 0)
 status["disableDifferentialChannel"] = \
-    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL+1, 1, 
+    hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL, 1, 
                                 voltage_key(VOLTAGE_RANGE), 0)
 
 # Initialize data saving parameters
