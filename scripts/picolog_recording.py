@@ -9,30 +9,30 @@ Originally adapted from: PicoTech, https://github.com/picotech/picosdk-python-wr
 
 """
 
-
-# imports
-import ctypes
-import numpy as np
-from picosdk.picohrdl import picohrdl as hrdl
-from picosdk.functions import assert_pico2000_ok
-import time
-
-# Settings
+# SETTINGS #####################################################################
 DIR_OUT = "20240924" # Output folder within data/recordings
 FS = 100 # Sampling frequency in milliseconds)
 CHANNEL = 9 # Channel to record from - script written for diferential recording so this is the odd-numbered channel
 N_SAMPLES = 6000 # Number of samples to record
 N_SAMPLES_CHUNK = 300 # Number of samples to record before saving to file
 VMAX = 39000  # Maximum voltage in microvolts (Mishra et al. 2024 used 39000)
-VOLTAGE_RANGE = 39 # Voltage range in millivolts
+VOLTAGE_RANGE = 39 # Voltage range in millivolts (see function voltage_key below for options)
 
-# Print status
+# Print settings
 print("\nRecording settings:")
 print(f"  Recording from channel {CHANNEL} in differential mode")
 print(f"  Voltage range: {VOLTAGE_RANGE} mV")
 print(f"  Recording {N_SAMPLES} samples in chunks of {N_SAMPLES_CHUNK}")
 print(f"  Total recording time: {N_SAMPLES * FS / 1000} seconds")
 print(f"  Saving data to data/recordings/{DIR_OUT}")
+
+# SET-UP #######################################################################
+# imports
+import ctypes
+import numpy as np
+from picosdk.picohrdl import picohrdl as hrdl
+from picosdk.functions import assert_pico2000_ok
+import time
 
 # create function that maps these valtages to the corresponding values
 def voltage_key(s):
@@ -45,6 +45,9 @@ def voltage_key(s):
         1250: 1,
         2500: 0
     }[s]
+
+# SET-UP DATA LOGGER ###########################################################
+print("\nSetting up data logger...")
 
 # Create chandle and status ready for use
 chandle = ctypes.c_int16()
@@ -67,8 +70,10 @@ status["disableDifferentialChannel"] = \
     hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL, 1, 
                                 voltage_key(VOLTAGE_RANGE), 0)
 
-# Set single reading parameters
+# Compute voltage scaling #####################################################
 print("\nComputing voltage scaling...")
+
+# Set single reading parameters
 range_ = hrdl.HRDL_VOLTAGERANGE[f"HRDL_{VOLTAGE_RANGE}_MV"]
 conversionTime = hrdl.HRDL_CONVERSIONTIME[f"HRDL_{FS}MS"]
 overflow = ctypes.c_int16(0)
@@ -88,6 +93,7 @@ max_ADC_Value = max_value.value
 V = (raw_ADC_value / max_ADC_Value) * VMAX
 print("  Voltage:", V)
 
+# RECORD DATA ##################################################################
 # Initialize data saving parameters
 save_data = []
 start_time = time.time()
