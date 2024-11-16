@@ -27,6 +27,8 @@ print(f"  Total recording time: {N_SAMPLES * FS / 1000} seconds")
 print(f"  Saving data to data/recordings/{DIR_OUT}")
 
 # SET-UP #######################################################################
+print("\nSetting up data logger...")
+
 # imports
 import ctypes
 import numpy as np
@@ -47,7 +49,7 @@ def voltage_key(s):
     }[s]
 
 # SET-UP DATA LOGGER ###########################################################
-print("\nSetting up data logger...")
+# print("\nSetting up data logger...")
 
 # Create chandle and status ready for use
 chandle = ctypes.c_int16()
@@ -71,7 +73,7 @@ status["disableDifferentialChannel"] = \
                                 voltage_key(VOLTAGE_RANGE), 0)
 
 # Compute voltage scaling #####################################################
-print("\nComputing voltage scaling...")
+# print("\nComputing voltage scaling...")
 
 # Set single reading parameters
 range_ = hrdl.HRDL_VOLTAGERANGE[f"HRDL_{VOLTAGE_RANGE}_MV"]
@@ -120,11 +122,11 @@ for i in range(N_SAMPLES):
 
 # Print the elapsed time
 print(f"--- {time.time() - start_time} seconds ---")
-print("Final saved data:", save_data)
+print("\nRecording complete")
 
 # Close unit
 status["closeUnit"] = hrdl.HRDLCloseUnit(chandle)
 assert_pico2000_ok(status["closeUnit"])
 
 # Print final status
-print("Status:", status)
+print("\nStatus:", status)
