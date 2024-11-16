@@ -11,7 +11,7 @@ Originally adapted from: PicoTech, https://github.com/picotech/picosdk-python-wr
 
 # SETTINGS #####################################################################
 DIR_OUT = "20240924" # Output folder within data/recordings
-FS = 100 # Sampling frequency in milliseconds)
+DT = 100 # Sampling frequency in milliseconds)
 CHANNEL = 9 # Channel to record from - script written for diferential recording so this is the odd-numbered channel
 N_SAMPLES = 6000 # Number of samples to record
 N_SAMPLES_CHUNK = 300 # Number of samples to record before saving to file
@@ -23,7 +23,7 @@ print("\nRecording settings:")
 print(f"  Recording from channel {CHANNEL} in differential mode")
 print(f"  Voltage range: {VOLTAGE_RANGE} mV")
 print(f"  Recording {N_SAMPLES} samples in chunks of {N_SAMPLES_CHUNK}")
-print(f"  Total recording time: {N_SAMPLES * FS / 1000} seconds")
+print(f"  Total recording time: {N_SAMPLES * (DT/1000)} seconds")
 print(f"  Saving data to data/recordings/{DIR_OUT}")
 
 # SET-UP #######################################################################
@@ -77,7 +77,7 @@ status["disableDifferentialChannel"] = \
 
 # Set single reading parameters
 range_ = hrdl.HRDL_VOLTAGERANGE[f"HRDL_{VOLTAGE_RANGE}_MV"]
-conversionTime = hrdl.HRDL_CONVERSIONTIME[f"HRDL_{FS}MS"]
+conversionTime = hrdl.HRDL_CONVERSIONTIME[f"HRDL_{DT}MS"]
 overflow = ctypes.c_int16(0)
 value = ctypes.c_int32()
 
