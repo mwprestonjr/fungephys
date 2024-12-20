@@ -1,0 +1,17 @@
+name: fungephys
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+    - numpy
+    - scipy
+    - pandas
+    - matplotlib
+    - seaborn
+    - neurodsp
+    - specparam
+    - jupyter
+    - ipykernel
+    - mne
