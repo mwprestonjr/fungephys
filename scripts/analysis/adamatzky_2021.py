@@ -11,7 +11,7 @@ from neurodsp.spectral import compute_spectrum
 
 import sys
 sys.path.append("code")
-from analysis import compute_exponent, compute_complexity
+from analysis import compute_exponent, compute_complexity, compute_timescale
 
 # settings
 DIR_INPUT = r"C:\Users\micha\datasets\adamatzky_2021\txt"
@@ -29,9 +29,12 @@ def main():
         if not os.path.exists(f"{path_out}/{folder}"): 
             os.makedirs(f"{path_out}/{folder}")
 
-    # loop through each species
+    # init
     exponent = np.zeros([N_SPECIES, N_CHANNELS])
     complexity = np.zeros([N_SPECIES, N_CHANNELS])
+    timescale = np.zeros([N_SPECIES, N_CHANNELS])
+
+    # loop through each species
     for ii, fname in enumerate(os.listdir(DIR_INPUT)):
         # load data
         data_in = pd.read_csv(os.path.join(DIR_INPUT, fname), sep='\t')
@@ -45,8 +48,14 @@ def main():
         # compute spectral exponent and complexity
         exponent[ii] = compute_exponent(spectra, freqs)
         complexity[ii] = compute_complexity(signals)
-        np.save("data/adamatzky_2021/results/exponent.npy", exponent)
-        np.save("data/adamatzky_2021/results/complexity.npy", complexity)
+
+        # compute timescale
+        timescale[ii] = compute_timescale(signals, FS)
+
+    # save results
+    np.save("data/adamatzky_2021/results/exponent.npy", exponent)
+    np.save("data/adamatzky_2021/results/complexity.npy", complexity)
+    np.save("data/adamatzky_2021/results/timescale.npy", timescale)
 
 
 def epoch_data(data, n_channels):

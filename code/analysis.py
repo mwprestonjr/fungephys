@@ -1,13 +1,32 @@
 """
-Analysis functions.
+Analysis functions:
+- compute_timescale: compute the timescale of a set of signals
+- compute_exponent: compute the exponent of a set of power spectra
+- compute_complexity: compute the Lempel-Ziv complexity of a set of signals
+- lempel_ziv_complexity: calculate the Lempel-Ziv complexity of a binary array
 """
 
 import numpy as np
 from specparam import SpectralGroupModel
+from timescales.fit import ACF
 
 import sys
 sys.path.append("code")
 from settings import SPECPARAM_SETTINGS, N_JOBS
+
+
+def compute_timescale(signals, fs, nlags=None):
+    """Compute the timescale of a set of signals"""
+
+    if nlags is None:
+        nlags = int(0.5 * signals.shape[1])
+        
+    acf = ACF()
+    acf.compute_acf(signals, fs, nlags=nlags)
+    acf.fit()
+    timescale = acf.params[:, 0]
+
+    return timescale
 
 
 def compute_exponent(spectra, freqs, ap_mode='knee', freq_range=None):
@@ -22,7 +41,7 @@ def compute_exponent(spectra, freqs, ap_mode='knee', freq_range=None):
 
 
 def compute_complexity(signals):
-    """Compute the Lempel-Ziv complexity of a set of binary signals"""
+    """Binaraize signals and compute the Lempel-Ziv complexity"""
 
     complexity = np.zeros(len(signals))
     for ii in range(len(signals)):
@@ -36,6 +55,7 @@ def compute_complexity(signals):
         complexity[ii] = lempel_ziv_complexity(signal)
 
     return complexity
+
 
 def lempel_ziv_complexity(binary_array):
     """
@@ -58,4 +78,3 @@ def lempel_ziv_complexity(binary_array):
         else:
             w = wc
     return len(sub_strings)
-

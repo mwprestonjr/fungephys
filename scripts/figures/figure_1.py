@@ -4,25 +4,24 @@ Figure 1: Fungal electrophysiology
 A. Experimental set-up image
 B. Voltage time-series (for all channels across all time)
 C. Example data snippet
-D. Example Power Spectra
-
+D. Example power spectra
+E. Example autocorrelation function
 """
 
 # imports
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-# from neurodsp.spectral import compute_spectrum
+from timescales.fit import ACF
 
 import sys
 sys.path.append("code")
-# from pico_utils import import_data
 from utils import shift_signals
-from plots import plot_signals, plot_spectra, beautify_ax
+from plots import plot_spectra, beautify_ax
 
 # settings
 FS = 1/0.06 # Sampling frequency (Hz)
-EXAMPLE_IDX = 2 # Channel to plot in C
+EXAMPLE_IDX = 0 # Channel to plot in C
 EPOCH = [900, 1200] # Time to plot in C
 NPERSEG = 2**12 # Spectral decomposition: samples per segment
 
@@ -44,17 +43,27 @@ def main():
     # ANALYSIS #################################################################
     print("Running analysis...")
 
+    # fit autocorrelation function
+    nlags = int(0.5 * signals.shape[1])
+    acf = ACF()
+    acf.compute_acf(signals[EXAMPLE_IDX], FS, nlags=nlags)
+    acf.fit()
+
     # PLOT #####################################################################
 
     # create figure and gridspec
     print("Plotting...")
-    fig = plt.figure(figsize=[12, 3], constrained_layout=True)
-    spec = gridspec.GridSpec(figure=fig, ncols=4, nrows=1, 
-                             width_ratios=[1, 1, 1.67, 1])
-    ax_a = fig.add_subplot(spec[0,0])
-    ax_b = fig.add_subplot(spec[0,1])
-    ax_c = fig.add_subplot(spec[0,2])
-    ax_d = fig.add_subplot(spec[0,3])
+    fig = plt.figure(figsize=[8, 9], constrained_layout=True)
+    spec = gridspec.GridSpec(figure=fig, ncols=2, nrows=3, 
+                             width_ratios=[1, 1], height_ratios=[1, 1, 1])
+    ax_c = fig.add_subplot(spec[1,:])
+    ax_d = fig.add_subplot(spec[2,0])
+    ax_e = fig.add_subplot(spec[2,1])
+
+    spec_ab = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=spec[0,:],
+                                               width_ratios=[0.45, 1])
+    ax_a = fig.add_subplot(spec_ab[0])
+    ax_b = fig.add_subplot(spec_ab[1])
 
     # plot subplot a
     ax_a.imshow(plt.imread("data/manuscript/figure_1_cartoon.png"))
@@ -62,8 +71,8 @@ def main():
     ax_a.set_title('Experimantal set-up')
 
     # plot subplot b
-    signals_shifted = shift_signals(signals, std=8)
-    ax_b.plot(time, signals_shifted.T, color='k', alpha=0.5)
+    signals_shifted = shift_signals(signals, std=5)
+    ax_b.plot(time, signals_shifted.T, color='k', linewidth=0.5)
     ax_b.set(xlabel='Time (s)', ylabel='Recording electrode')
     ax_b.legend().set_visible(False)
     ax_b.set_yticks([])
@@ -78,6 +87,12 @@ def main():
     # plot subplot d
     plot_spectra(spectra, freqs, ax=ax_d, color='k')
     ax_d.set_title('Power spectral density')
+
+    # plot subplot d
+    lags = acf.lags / FS
+    ax_e.plot(lags, acf.corrs, color='k')
+    ax_e.set(xlabel='Lag (s)', ylabel='Autocorrelation')
+    ax_e.set_title('Autocorrelation function')
 
     # beautify
     for ax in [ax_a, ax_b, ax_c, ax_d]:

@@ -5,8 +5,7 @@ A. Cartoon to represent kingdoms
 B. Example time-series for each kingdom
 C. Power spectra for each kingdom
 D. Violin plot of exponent across kingdoms 
-E. Violin plot of complexity across kingdoms 
-
+E. Violin plot of timescale across kingdoms 
 """
 
 # imports
@@ -18,13 +17,13 @@ import seaborn as sns
 
 import sys
 sys.path.append("code")
-# from pico_utils import import_data
-from analysis import compute_exponent, compute_complexity
+from analysis import compute_exponent, compute_timescale
 from utils import shift_signals
 from plots import plot_spectra, beautify_ax
 
 # settings
 SHIFT = [8, 5, 5] # Shift signals for plotting (STDs)
+FS = {'fungal': 1/0.06, 'plant': np.nan, 'human': 512} # Sampling frequency (Hz)
 
 
 def main():
@@ -52,15 +51,15 @@ def main():
     # ANALYSIS #################################################################
     print("Running analysis...")
 
-    # measure and correlate exponent and complexity
-    exponent, complexity = {}, {}
+    # measure exponent and timescale
+    exponent, timescale = {}, {}
     df = pd.DataFrame()
     for ii, kingdom in enumerate(['fungal', 'human']):
-        complexity[kingdom] = compute_complexity(signals[kingdom])
+        timescale[kingdom] = compute_timescale(signals[kingdom], FS[kingdom])
         exponent[kingdom] = compute_exponent(spectra[kingdom], freqs[kingdom])
         df = pd.concat([df, pd.DataFrame({'kingdom': kingdom, 
                                           'exponent': exponent[kingdom], 
-                                          'complexity': complexity[kingdom]})])
+                                          'timescale': timescale[kingdom]})])
 
     # PLOT #####################################################################
     print("Plotting...")
@@ -90,8 +89,8 @@ def main():
         # plot subplot b
         ax_b = fig.add_subplot(spec[ii, 1])
         signals_i = shift_signals(signals[kingdom], std=SHIFT[ii])
-        ax_b.plot(time[kingdom], signals_i.T, color='k', alpha=0.5)
-        ax_b.set(xlabel='Time (s)', ylabel='Voltage (uV)')
+        ax_b.plot(time[kingdom], signals_i.T, color='k', linewidth=0.5)
+        ax_b.set(xlabel='time (s)', ylabel='voltage (uV)')
         beautify_ax(ax_b)
 
         # plot subplot c
@@ -106,17 +105,17 @@ def main():
 
     # plot subplot d
     ax_d = fig.add_subplot(gs_de[1])
-    sns.violinplot(data=df, x='kingdom', y='exponent', ax=ax_d)
+    sns.boxplot(data=df, x='kingdom', y='exponent', ax=ax_d, color='gray')
     ax_d.set_xticklabels(ax_d.get_xticklabels(), rotation=15)
-    ax_d.set(xlabel="Kingdom", ylabel="Exponent")
+    ax_d.set(xlabel="kingdom", ylabel="exponent")
     ax_d.set_title('Exponent')
 
     # plot subplot e
     ax_e = fig.add_subplot(gs_de[2])
-    sns.violinplot(data=df, x='kingdom', y='complexity', ax=ax_e)
+    sns.boxplot(data=df, x='kingdom', y='timescale', ax=ax_e, color='gray')
     ax_e.set_xticklabels(ax_e.get_xticklabels(), rotation=15)
-    ax_e.set(xlabel="Kingdom", ylabel="Complexity")
-    ax_e.set_title('Complexity')
+    ax_e.set(xlabel="kingdom", ylabel="timescale")
+    ax_e.set_title('Timescale')
 
     # beautify
     for ax in [ax_d, ax_e]:
