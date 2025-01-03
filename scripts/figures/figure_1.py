@@ -19,7 +19,7 @@ from timescales.fit import ACF
 import sys
 sys.path.append("code")
 from utils import shift_signals
-from plots import plot_spectra, beautify_ax
+from plots import beautify_ax
 
 # settings
 FS = 1/0.06 # Sampling frequency (Hz)
@@ -61,7 +61,7 @@ def main():
     print("Plotting...")
     fig = plt.figure(figsize=[8, 9], constrained_layout=True)
     spec = gridspec.GridSpec(figure=fig, ncols=2, nrows=3, 
-                             width_ratios=[1, 1], height_ratios=[1, 1, 1])
+                             width_ratios=[1, 1], height_ratios=[1, 0.6, 1])
     ax_c = fig.add_subplot(spec[1,:])
     ax_d = fig.add_subplot(spec[2,0])
     ax_e = fig.add_subplot(spec[2,1])
