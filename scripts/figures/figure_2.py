@@ -122,7 +122,7 @@ def main():
         beautify_ax(ax)
 
     # save figure
-    fig.savefig("figures/manuscript/figure_3.png")
+    fig.savefig("figures/manuscript/figure_2.png")
 
 
 if __name__ == "__main__":
