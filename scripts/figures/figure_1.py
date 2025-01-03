@@ -4,14 +4,16 @@ Figure 1: Fungal electrophysiology
 A. Experimental set-up image
 B. Voltage time-series (for all channels across all time)
 C. Example data snippet
-D. Example power spectra
-E. Example autocorrelation function
+D. Example power spectra with model fit
+E. Example autocorrelation function with model fit
 """
 
 # imports
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.lines import Line2D
+from specparam import SpectralModel
 from timescales.fit import ACF
 
 import sys
@@ -42,6 +44,10 @@ def main():
 
     # ANALYSIS #################################################################
     print("Running analysis...")
+
+    # fit power spectra
+    sm = SpectralModel(aperiodic_mode='knee')
+    sm.fit(freqs, spectra[EXAMPLE_IDX])
 
     # fit autocorrelation function
     nlags = int(0.5 * signals.shape[1])
@@ -85,14 +91,19 @@ def main():
     ax_c.set_title('Example recording')
 
     # plot subplot d
-    plot_spectra(spectra, freqs, ax=ax_d, color='k')
-    ax_d.set_title('Power spectral density')
+    ax_d.plot(sm.freqs, sm.power_spectrum, linewidth=2, color='k', label="PSD")
+    ax_d.plot(sm.freqs, sm._ap_fit, linestyle="--", color='r', label="model")
+    ax_d.legend()
+    ax_d.set_xscale('log')
+    ax_d.set(xlabel="frequency (Hz)", ylabel="power (\u03BCV\u00b2/Hz)")
+    ax_d.set_title('Power spectral density (PSD)')
 
     # plot subplot d
     lags = acf.lags / FS
-    ax_e.plot(lags, acf.corrs, color='k')
-    ax_e.set(xlabel='Lag (s)', ylabel='Autocorrelation')
-    ax_e.set_title('Autocorrelation function')
+    ax_e.plot(lags, acf.corrs, color='k', label="ACF")
+    ax_e.plot(lags, acf.corrs_fit, linestyle="--", color='r', label="model")
+    ax_e.set(xlabel='lag (s)', ylabel='autocorrelation')
+    ax_e.set_title('Autocorrelation function (ACF)')
 
     # beautify
     for ax in [ax_a, ax_b, ax_c, ax_d]:
