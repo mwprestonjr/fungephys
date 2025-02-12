@@ -46,11 +46,13 @@ def main():
     # print status
     print("======= Starting environment control script =======")
 
-    # init
+    # init sensors and devices
     light_status = init_light()
     last_fan_time = time.time() - 3600  # Ensure fan runs on startup
     fan_status, fan_ran = False, False
+    humidifer_status = False
 
+    # init data logs
     data_times = []
     temperature_log = []
     humidity_log = []
@@ -76,9 +78,9 @@ def main():
             light_log.append(light_status)
 
             # Control devices
-            control_humidifier(humidity)
+            humidifer_status = control_humidifier(humidifer_status, humidity)
             light_status = control_light(light_status)
-            last_fan_time, fan_status, fan_ran = control_fan(last_fan_time, fan_status, fan_ran)
+            fan_status, fan_ran, last_fan_time = control_fan(fan_status, fan_ran, last_fan_time)
             
             time.sleep(10)  # Delay between checks
 
@@ -108,13 +110,17 @@ def init_light():
     return light_status
 
 
-def control_humidifier(humidity):
-    if humidity < HUMIDITY_LOW:
+def control_humidifier(humidifer_status, humidity):
+    if humidity < HUMIDITY_LOW and not humidifer_status:
         send_command('H')  # Turn ON humidifier
+        humidifer_status = True
         print("Humidifier ON")
-    elif humidity > HUMIDITY_HIGH:
+    elif humidity > HUMIDITY_HIGH and humidifer_status:
         send_command('h')  # Turn OFF humidifier
+        humidifer_status = False
         print("Humidifier OFF")
+
+    return humidifer_status
 
 
 def control_light(light_status):
@@ -131,21 +137,24 @@ def control_light(light_status):
     return light_status
 
 
-def control_fan(last_fan_time, fan_status, fan_ran):
+def control_fan(fan_status, fan_ran, last_fan_time):
     if time.time() - last_fan_time >= FAN_INTERVAL and not fan_status and not fan_ran:
         send_command('F')  # Turn ON fan
         send_command('H')  # Turn ON humidifier
         print("Fan ON")
         print("Humidifier ON")
-        last_fan_time = time.time()
         fan_status = True
         fan_ran = True
-    
+        last_fan_time = time.time()
+
     if time.time() - last_fan_time >= FAN_DURATION and fan_status:
         send_command('f')
+        send_command('h')
         print("Fan OFF")
+        print("Humidifier OFF")
+        fan_status = False
     
-    return last_fan_time, fan_status, fan_ran
+    return fan_status, fan_ran, last_fan_time
 
 
 def save_data(data_times, temperature_log, humidity_log, light_log):
