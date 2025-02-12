@@ -44,6 +44,7 @@ def main():
     # init
     light_status = init_light()
     last_fan_time = time.time() - 3600  # Ensure fan runs on startup
+    fan_status, fan_ran = False, False
 
     while True:
         # Read temperature and humidity
@@ -59,7 +60,7 @@ def main():
         # Control devices
         control_humidifier(humidity)
         light_status = control_light(light_status)
-        last_fan_time = control_fan(last_fan_time)
+        last_fan_time, fan_status, fan_ran = control_fan(last_fan_time, fan_status, fan_ran)
         
         time.sleep(10)  # Delay between checks
 
@@ -77,7 +78,6 @@ def init_light():
     if now.hour >= LIGHT_ON_TIME and now.hour < LIGHT_OFF_TIME:
         send_command('L')  # Turn ON light
         light_status = True
-        print("Light ON")
 
     return light_status
 
@@ -105,16 +105,21 @@ def control_light(light_status):
     return light_status
 
 
-def control_fan(last_fan_time):
-    if time.time() - last_fan_time >= FAN_INTERVAL:
+def control_fan(last_fan_time, fan_status, fan_ran):
+    if time.time() - last_fan_time >= FAN_INTERVAL and not fan_status and not fan_ran:
         send_command('F')  # Turn ON fan
         send_command('H')  # Turn ON humidifier
-        print("Fan (and humidifier) ON")
-        time.sleep(FAN_DURATION)  # Keep fan on for 2 minutes
-        send_command('f')  # Turn OFF fan
-        print("Fan OFF")
-        return time.time()  # Update last_fan_time
-    return last_fan_time
+        print("Fan ON")
+        print("Humidifier ON")
+        last_fan_time = time.time()
+        fan_status = True
+        fan_ran = True
+    
+    if time.time() - last_fan_time >= FAN_DURATION and fan_status:
+        send_command('f')
+        print("Fan OFF")        
+    
+    return last_fan_time, fan_status, fan_ran
 
 
 def celcius_to_fahrenheit(celsius):
