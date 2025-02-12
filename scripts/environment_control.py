@@ -39,7 +39,7 @@ FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
 
 def main():
     # print status
-    print("Starting environment control script...\n")
+    print("======= Starting environment control script =======")
 
     # init
     light_status = init_light()
@@ -52,7 +52,7 @@ def main():
             humidity = sht.relative_humidity
             temperature = sht.temperature
             temperature_f = celcius_to_fahrenheit(temperature)
-            print(f"Temperature: {temperature:.2f}°C ({temperature_f:.2f}°F), Humidity: {humidity:.2f}%")
+            print(f"\nEnvironmental conditions:\n\tTemperature: {temperature:.2f}°C ({temperature_f:.2f}°F) \n\tHumidity: {humidity:.2f}%")
         except Exception as e:
             print(f"Failed to read from sensor: {e}")
             continue
