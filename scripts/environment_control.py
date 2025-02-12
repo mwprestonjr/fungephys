@@ -84,8 +84,10 @@ def main():
 
     # if keyboard interrupt, save data
     except KeyboardInterrupt:
+        print("\n========= Keyboard interrupt detected =========")
+        shutdown()
         save_data(data_time, temperature_log, humidity_log, light_log)
-        print("\n======= Stopping environment control script =======")
+        print("\n==================== END =====================")
         exit(0)
 
 
@@ -141,7 +143,7 @@ def control_fan(last_fan_time, fan_status, fan_ran):
     
     if time.time() - last_fan_time >= FAN_DURATION and fan_status:
         send_command('f')
-        print("Fan OFF")        
+        print("Fan OFF")
     
     return last_fan_time, fan_status, fan_ran
 
@@ -159,6 +161,14 @@ def save_data(data_times, temperature_log, humidity_log, light_log):
     df = pd.DataFrame(data)
     df.to_csv(FILENAME, index=False)
     print(f"Data saved to {FILENAME}")
+
+
+def shutdown():
+    # turn off all devices
+    print("Shutting down all devices...")
+    send_command('h')  # Turn OFF humidifier
+    send_command('f')  # Turn OFF fan
+    send_command('l')  # Turn OFF light
 
 
 def celcius_to_fahrenheit(celsius):
