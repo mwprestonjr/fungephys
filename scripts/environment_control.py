@@ -41,7 +41,8 @@ def main():
         try:
             humidity = sht.relative_humidity
             temperature = sht.temperature
-            print(f"Temperature: {temperature:.2f}°C, Humidity: {humidity:.2f}%")
+            temperature_f = celcius_to_fahrenheit(temperature)
+            print(f"Temperature: {temperature:.2f}°C ({temperature_f:.2f}°F), Humidity: {humidity:.2f}%")
         except Exception as e:
             print(f"Failed to read from sensor: {e}")
             continue
@@ -83,6 +84,10 @@ def control_fan(last_fan_time):
         send_command('f')  # Turn OFF fan
         return time.time()  # Update last_fan_time
     return last_fan_time
+
+
+def celcius_to_fahrenheit(celsius):
+    return (celsius * 9/5) + 32
 
 
 if __name__ == "__main__":
