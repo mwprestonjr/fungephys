@@ -27,6 +27,9 @@ bus = smbus2.SMBus(1)
 arduino_address = 0x04
 
 # Control settings
+LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
+LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
+
 HUMIDITY_LOW = 85.0 # Humidity lower threshold
 HUMIDITY_HIGH = 95.0 # Humidity upper threshold
 
@@ -39,6 +42,7 @@ def main():
     print("Starting environment control script...\n")
 
     # init
+    light_status = init_light()
     last_fan_time = time.time() - 3600  # Ensure fan runs on startup
 
     while True:
@@ -54,7 +58,7 @@ def main():
 
         # Control devices
         control_humidifier(humidity)
-        control_light()
+        light_status = control_light(light_status)
         last_fan_time = control_fan(last_fan_time)
         
         time.sleep(10)  # Delay between checks
@@ -67,6 +71,17 @@ def send_command(command):
         print(f"Failed to send command {command}: {e}")
 
 
+def init_light():
+    # Initialize light control
+    now = datetime.now()
+    if now.hour >= LIGHT_ON_TIME and now.hour < LIGHT_OFF_TIME:
+        send_command('L')  # Turn ON light
+        light_status = True
+        print("Light ON")
+
+    return light_status
+
+
 def control_humidifier(humidity):
     if humidity < HUMIDITY_LOW:
         send_command('H')  # Turn ON humidifier
@@ -76,14 +91,18 @@ def control_humidifier(humidity):
         print("Humidifier OFF")
 
 
-def control_light():
+def control_light(light_status):
     now = datetime.now()
-    if now.hour == 8 and now.minute == 0:
-        send_command('L')  # Turn ON light
-        print(f"Light ON at {now}")
-    elif now.hour == 20 and now.minute == 0:
-        send_command('l')  # Turn OFF light
-        print(f"Light OFF at {now}")
+    if now.hour >= LIGHT_ON_TIME and now.hour < LIGHT_OFF_TIME and not light_status:
+        send_command('L')
+        light_status = True
+        print("Light ON")
+    elif now.hour >= LIGHT_OFF_TIME and light_status:
+        send_command('l')
+        light_status = False
+        print("Light OFF")
+
+    return light_status
 
 
 def control_fan(last_fan_time):
