@@ -35,7 +35,12 @@ FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
 
 
 def main():
+    # print status
+    print("Starting environment control script...\n")
+
+    # init
     last_fan_time = time.time() - 3600  # Ensure fan runs on startup
+
     while True:
         # Read temperature and humidity
         try:
@@ -65,23 +70,30 @@ def send_command(command):
 def control_humidifier(humidity):
     if humidity < HUMIDITY_LOW:
         send_command('H')  # Turn ON humidifier
+        print("Humidifier ON")
     elif humidity > HUMIDITY_HIGH:
         send_command('h')  # Turn OFF humidifier
+        print("Humidifier OFF")
 
 
 def control_light():
     now = datetime.now()
     if now.hour == 8 and now.minute == 0:
         send_command('L')  # Turn ON light
+        print(f"Light ON at {now}")
     elif now.hour == 20 and now.minute == 0:
         send_command('l')  # Turn OFF light
+        print(f"Light OFF at {now}")
 
 
 def control_fan(last_fan_time):
     if time.time() - last_fan_time >= FAN_INTERVAL:
         send_command('F')  # Turn ON fan
+        send_command('H')  # Turn ON humidifier
+        print("Fan (and humidifier) ON")
         time.sleep(FAN_DURATION)  # Keep fan on for 2 minutes
         send_command('f')  # Turn OFF fan
+        print("Fan OFF")
         return time.time()  # Update last_fan_time
     return last_fan_time
 
