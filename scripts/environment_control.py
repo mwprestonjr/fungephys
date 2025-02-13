@@ -11,15 +11,16 @@ humidifier, light, and fan using the Arduino. The behavior of the devices is:
 """
 
 # imports
+import os
+import numpy as np
+import pandas as pd 
+
 import smbus2
 import time
 from datetime import datetime
 from adafruit_sht31d import SHT31D
 import board
 import busio
-
-import numpy as np
-import pandas as pd 
 
 # Initialize I2C for SHT30
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -30,7 +31,7 @@ bus = smbus2.SMBus(1)
 arduino_address = 0x04
 
 # Control settings
-FILENAME = "data/environment/temp.csv" # Output file name for environmental data
+FNAME_DATALOG = "data/environment/datalog.csv" # Output file name for environmental data
 FNAME_EVENTLOG = "data/environment/eventlog.csv" # Output file name for event log
 
 LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
@@ -53,17 +54,23 @@ def main():
     fan_status, fan_ran = False, False
     humidifer_status = False
 
-    # init data logs
-    data_times = []
-    temperature_log = []
-    humidity_log = []
-    light_log = []
+    # create data log files
+    if not os.path.exists('data/environment'):
+        os.makedirs('data/environment')
+    if not os.path.exists(FNAME_DATALOG):
+        with open(FNAME_DATALOG, 'w') as f:
+            f.write("time,temperature,humidity,light\n")
+    if not os.path.exists(FNAME_EVENTLOG):
+        with open(FNAME_EVENTLOG, 'w') as f:
+            f.write("time,command\n")
+
+    # print status
+    print("======= Environment control script started =======")
 
     try:
         while True:
             # Read temperature and humidity
             try:
-                data_time = datetime.now()
                 humidity = sht.relative_humidity
                 temperature = sht.temperature
                 temperature_f = celcius_to_fahrenheit(temperature)
@@ -72,11 +79,16 @@ def main():
                 print(f"Failed to read from sensor: {e}")
                 continue
 
-            # collect data
-            data_times.append(data_time)
-            temperature_log.append(temperature)
-            humidity_log.append(humidity)
-            light_log.append(light_status)
+            # write data to CSV
+            data_time = datetime.now()
+            data_log = {
+                'time': data_time,
+                'temperature': temperature,
+                'humidity': humidity,
+                'light': light_status
+            }
+            df = pd.DataFrame([data_log])
+            df.to_csv(FNAME_DATALOG, mode='a', header=False, index=False)
 
             # Control devices
             humidifer_status = control_humidifier(humidifer_status, humidity)
@@ -89,7 +101,6 @@ def main():
     except KeyboardInterrupt:
         print("\n========= Keyboard interrupt detected =========")
         shutdown()
-        save_data(data_time, temperature_log, humidity_log, light_log)
         print("\n==================== END =====================")
         exit(0)
 
@@ -104,8 +115,8 @@ def send_command(command):
     # Log event
     event_time = datetime.now()
     event_log = {
-        'Time': event_time,
-        'Command': command
+        'time': event_time,
+        'command': command
     }
     df = pd.DataFrame([event_log])
     df.to_csv(FNAME_EVENTLOG, mode='a', header=False, index=False)
@@ -168,21 +179,6 @@ def control_fan(fan_status, fan_ran, last_fan_time):
         fan_status = False
     
     return fan_status, fan_ran, last_fan_time
-
-
-def save_data(data_times, temperature_log, humidity_log, light_log):
-    print("\nSaving data...")
-
-    # save data to CSV
-    data = {
-        'Time': data_times,
-        'Temperature (°C)': temperature_log,
-        'Humidity (%)': humidity_log,
-        'Light Status': light_log
-    }
-    df = pd.DataFrame(data)
-    df.to_csv(FILENAME, index=False)
-    print(f"Data saved to {FILENAME}")
 
 
 def shutdown():
