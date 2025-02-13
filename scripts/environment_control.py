@@ -205,7 +205,7 @@ def control_fan(fan_status, humidifer_status):
         fan_status['last_run_time'] = time.time()
         humidifer_status = True
 
-    if time.time() - fan_status['last_run_time'] >= FAN_DURATION and fan_status['ran']:
+    if time.time() - fan_status['last_run_time'] >= FAN_DURATION and fan_status['ran'] and fan_status['status']:
         send_command('f')
         send_command('h')
         print("Fan OFF")
