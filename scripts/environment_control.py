@@ -30,7 +30,8 @@ bus = smbus2.SMBus(1)
 arduino_address = 0x04
 
 # Control settings
-FILENAME = "data/environment/temp.csv"
+FILENAME = "data/environment/temp.csv" # Output file name for environmental data
+FNAME_EVENTLOG = "data/environment/eventlog.csv" # Output file name for event log
 
 LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
 LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
@@ -94,10 +95,20 @@ def main():
 
 
 def send_command(command):
+    # Send command to Arduino
     try:
         bus.write_byte(arduino_address, ord(command))
     except Exception as e:
         print(f"Failed to send command {command}: {e}")
+
+    # Log event
+    event_time = datetime.now()
+    event_log = {
+        'Time': event_time,
+        'Command': command
+    }
+    df = pd.DataFrame([event_log])
+    df.to_csv(FNAME_EVENTLOG, mode='a', header=False, index=False)
 
 
 def init_light():
