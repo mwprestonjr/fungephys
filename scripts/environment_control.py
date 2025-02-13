@@ -31,8 +31,7 @@ bus = smbus2.SMBus(1)
 arduino_address = 0x04
 
 # Control settings
-FNAME_DATALOG = "data/environment/datalog.csv" # Output file name for environmental data
-FNAME_EVENTLOG = "data/environment/eventlog.csv" # Output file name for event log
+PATH_OUT = "data/environment/"  # Output folder for data
 
 LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
 LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
@@ -55,14 +54,12 @@ def main():
     humidifer_status = False
 
     # create data log files
-    if not os.path.exists('data/environment'):
-        os.makedirs('data/environment')
-    if not os.path.exists(FNAME_DATALOG):
-        with open(FNAME_DATALOG, 'w') as f:
-            f.write("time,temperature,humidity,light\n")
-    if not os.path.exists(FNAME_EVENTLOG):
-        with open(FNAME_EVENTLOG, 'w') as f:
-            f.write("time,command\n")
+    if not os.path.exists(PATH_OUT):
+        os.makedirs(PATH_OUT)
+    with open(f"{PATH_OUT}/datalog.csv", 'w') as f:
+        f.write("time,temperature,humidity,light\n")
+    with open(f"{PATH_OUT}/eventlog.csv", 'w') as f:
+        f.write("time,command\n")
 
     # print status
     print("======= Environment control script started =======")
@@ -88,7 +85,7 @@ def main():
                 'light': light_status
             }
             df = pd.DataFrame([data_log])
-            df.to_csv(FNAME_DATALOG, mode='a', header=False, index=False)
+            df.to_csv(f"{PATH_OUT}/datalog.csv", mode='a', header=False, index=False)
 
             # Control devices
             humidifer_status = control_humidifier(humidifer_status, humidity)
@@ -119,7 +116,7 @@ def send_command(command):
         'command': command
     }
     df = pd.DataFrame([event_log])
-    df.to_csv(FNAME_EVENTLOG, mode='a', header=False, index=False)
+    df.to_csv(f"{PATH_OUT}/eventlog.csv", mode='a', header=False, index=False)
 
 
 def init_light():
