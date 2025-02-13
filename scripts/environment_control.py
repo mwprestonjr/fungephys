@@ -97,9 +97,9 @@ def main():
             df.to_csv(f"{PATH_OUT}/datalog.csv", mode='a', header=False, index=False)
 
             # Control devices
+            fan_status, fan_ran, last_fan_time, humidifer_status = control_fan(fan_status, fan_ran, last_fan_time, humidifer_status)
             humidifer_status = control_humidifier(humidifer_status, humidity)
             light_status = control_light(light_status)
-            fan_status, fan_ran, last_fan_time = control_fan(fan_status, fan_ran, last_fan_time)
             
             time.sleep(10)  # Delay between checks
 
@@ -167,7 +167,7 @@ def control_light(light_status):
     return light_status
 
 
-def control_fan(fan_status, fan_ran, last_fan_time):
+def control_fan(fan_status, fan_ran, last_fan_time, humidifer_status):
     if time.time() - last_fan_time >= FAN_INTERVAL and not fan_status and not fan_ran:
         send_command('F')  # Turn ON fan
         send_command('H')  # Turn ON humidifier
@@ -176,6 +176,7 @@ def control_fan(fan_status, fan_ran, last_fan_time):
         fan_status = True
         fan_ran = True
         last_fan_time = time.time()
+        humidifer_status = True
 
     if time.time() - last_fan_time >= FAN_DURATION and fan_status:
         send_command('f')
@@ -183,8 +184,9 @@ def control_fan(fan_status, fan_ran, last_fan_time):
         print("Fan OFF")
         print("Humidifier OFF")
         fan_status = False
+        humidifer_status = False
     
-    return fan_status, fan_ran, last_fan_time
+    return fan_status, fan_ran, last_fan_time, humidifer_status
 
 
 def shutdown():
