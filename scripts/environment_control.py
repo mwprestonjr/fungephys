@@ -117,6 +117,8 @@ def init_light():
     if now.hour >= LIGHT_ON_TIME and now.hour < LIGHT_OFF_TIME:
         send_command('L')  # Turn ON light
         light_status = True
+    else:
+        light_status = False
 
     return light_status
 
