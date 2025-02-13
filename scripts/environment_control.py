@@ -39,7 +39,7 @@ LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
 HUMIDITY_LOW = 85.0 # Humidity lower threshold
 HUMIDITY_HIGH = 95.0 # Humidity upper threshold
 
-FAN_DURATION = 120  # Duration to keep the fan on, in seconds
+FAN_DURATION = 12  # Duration to keep the fan on, in seconds
 FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
 
 
@@ -61,8 +61,17 @@ def main():
     with open(f"{PATH_OUT}/eventlog.csv", 'w') as f:
         f.write("time,command\n")
 
+    # print settings
+    print("\nEnvironment control settings:")
+    print(f"  Light ON time: {LIGHT_ON_TIME}:00")
+    print(f"  Light OFF time: {LIGHT_OFF_TIME}:00")
+    print(f"  Humidity range: [{HUMIDITY_LOW}%, {HUMIDITY_HIGH}%]")
+    print(f"  Fan ON duration: {FAN_DURATION} seconds")
+    print(f"  Fan interval: {FAN_INTERVAL} seconds")
+    print(f"  Data will be saved to '{PATH_OUT}'")
+
     # print status
-    print("======= Environment control script started =======")
+    print("\n======= Environment control script started =======")
 
     try:
         while True:
