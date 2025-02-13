@@ -113,6 +113,7 @@ def main():
     except KeyboardInterrupt:
         print("\n========= Keyboard interrupt detected =========")
         shutdown()
+        print("Find data in 'data/environment/'")
         print("\n==================== END =====================")
         exit(0)
 
