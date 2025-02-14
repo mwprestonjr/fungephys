@@ -152,7 +152,6 @@ def init_fan():
     send_command('F')
     fan_status = dict({
         'status': True,
-        'ran': True,
         'last_run_time': time.time()
     })
 
@@ -195,17 +194,16 @@ def control_light(light_status):
 
 
 def control_fan(fan_status, humidifer_status):
-    if time.time() - fan_status['last_run_time'] >= FAN_INTERVAL and not fan_status['ran']:
+    if time.time() - fan_status['last_run_time'] >= FAN_INTERVAL:
         send_command('F')  # Turn ON fan
         send_command('H')  # Turn ON humidifier
         print("Fan ON")
         print("Humidifier ON")
         fan_status['status'] = True
-        fan_status['ran'] = True
         fan_status['last_run_time'] = time.time()
         humidifer_status = True
 
-    if time.time() - fan_status['last_run_time'] >= FAN_DURATION and fan_status['ran'] and fan_status['status']:
+    if time.time() - fan_status['last_run_time'] >= FAN_DURATION and fan_status['status']:
         send_command('f')
         send_command('h')
         print("Fan OFF")
