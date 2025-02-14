@@ -61,7 +61,7 @@ def main():
 
         except KeyboardInterrupt:
             print("\n============ Keyboard interrupt detected ============")
-            print(f"Data save to '{PATH_OUT}/commandlog.csv'")
+            print(f"Data saved to '{PATH_OUT}/commandlog.csv'")
             print("\n======================= END ========================")
             break
 
