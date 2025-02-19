@@ -11,9 +11,15 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import argparse
 
+# settings
+INTERVAL = 60000
+
+
 def main():
+
     # parse command line arguments
     parser = argparse.ArgumentParser(description='Plot environmental data.')
     parser.add_argument('--path', type=str, default='data/environment/', 
@@ -21,6 +27,21 @@ def main():
     args = parser.parse_args()
     path = args.path
 
+    # plot
+    datalog, eventlog = import_data(path)
+    fig, axes = init_fig()
+    plot_sensor_data(datalog, eventlog, axes)
+    anim = FuncAnimation(fig, update_plot, interval=INTERVAL, fargs=(path, axes),
+                            cache_frame_data=False)
+    plt.show()
+
+
+def update_plot(frame, path, axes):
+    datalog, eventlog = import_data(path)
+    plot_sensor_data(datalog, eventlog, axes)
+
+
+def import_data(path):
     # Read in the datalog 
     datalog = pd.read_csv(f"{path}/datalog.csv")
     datalog, start_time = create_time_column(datalog)
@@ -31,8 +52,7 @@ def main():
     eventlog = pd.read_csv(f"{path}/eventlog.csv")
     eventlog, _ = create_time_column(eventlog, start_time)
 
-    # Plot
-    plot_sensor_data(datalog, eventlog)
+    return datalog, eventlog
 
 
 def create_time_column(df, start_time=None):
@@ -66,15 +86,13 @@ def get_event_times(datalog, eventlog):
     return start_times, end_times
 
 
-def plot_sensor_data(datalog, eventlog):
+def plot_sensor_data(datalog, eventlog, axes):
     # plot environmental data
-    fig, axes = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
     features = ['temperature', 'humidity', 'light']
     title = ['Temperature', 'Humidity', 'Light']
     ylabels = ['temperature (°F)', 'humidity (%)', 'light (ON/OFF)']
-    colors = ['r', 'b', 'g']
-    for ax, feature, title, ylabel, color in zip(axes, features, title, ylabels, colors):
-        ax.plot(datalog['datetime'], datalog[feature], color=color)
+    for ax, feature, title, ylabel in zip(axes, features, title, ylabels):
+        ax.plot(datalog['datetime'], datalog[feature], color='k', linewidth=3)
         ax.set_ylabel(ylabel)
         ax.set_title(title)
 
@@ -98,7 +116,25 @@ def plot_sensor_data(datalog, eventlog):
 
     # format and show
     plt.tight_layout()
-    plt.show()
+
+
+def init_fig():
+    # create figure
+    fig, axes = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
+
+    # color background of ideal ranges
+    axes[0].axhspan(65, 75, color='g', alpha=0.2)
+    axes[0].axhspan(60, 65, color='y', alpha=0.2)
+    axes[0].axhspan(75, 80, color='y', alpha=0.2)
+    axes[0].axhline(80, color='r', linewidth=5, alpha=0.2)
+    axes[0].axhline(60, color='r', linewidth=5, alpha=0.2)
+    axes[1].axhspan(90, 100, color='g', alpha=0.2)
+    axes[1].axhspan(85, 90, color='y', alpha=0.2)
+    axes[1].axhline(85, color='r', linewidth=5, alpha=0.2)
+    axes[2].axhspan(-0.5, 0.5, color='grey', alpha=0.2)
+    axes[2].axhspan(0.5, 1.5, color='grey', alpha=0.1)
+
+    return fig, axes
 
 
 if __name__ == "__main__":
