@@ -1,0 +1,9 @@
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+neurodsp
+specparam
+jupyter
+ipykernel
