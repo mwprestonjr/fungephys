@@ -39,8 +39,8 @@ LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
 HUMIDITY_LOW = 90.0 # Humidity lower threshold
 HUMIDITY_HIGH = 98.0 # Humidity upper threshold
 
-FAN_DURATION = 120  # Duration to keep the fan on, in seconds
-FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
+# FAN_DURATION = 120  # Duration to keep the fan on, in seconds
+# FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
 
     # init sensors and devices
     light_status = init_light()
-    fan_status = init_fan()
+    # fan_status = init_fan()
     humidifer_status = init_humidifier()
 
     # create data log files
@@ -67,13 +67,13 @@ def main():
     print(f"  Light ON time: {LIGHT_ON_TIME}:00")
     print(f"  Light OFF time: {LIGHT_OFF_TIME}:00")
     print(f"  Humidity range: [{HUMIDITY_LOW}%, {HUMIDITY_HIGH}%]")
-    print(f"  Fan ON duration: {FAN_DURATION} seconds")
-    print(f"  Fan interval: {FAN_INTERVAL} seconds")
+    # print(f"  Fan ON duration: {FAN_DURATION} seconds")
+    # print(f"  Fan interval: {FAN_INTERVAL} seconds")
 
     # print status
     print(f"\nDevices initialized:")
     print(f"  Light: {'ON' if light_status else 'OFF'}")
-    print(f"  Fan: {'ON' if fan_status['status'] else 'OFF'}")
+    # print(f"  Fan: {'ON' if fan_status['status'] else 'OFF'}")
     print(f"  Humidifier: {'ON' if humidifer_status else 'OFF'}")
     print(f"\nData log files created at '{PATH_OUT}'")
 
@@ -105,7 +105,7 @@ def main():
             df.to_csv(f"{PATH_OUT}/datalog.csv", mode='a', header=False, index=False)
 
             # Control devices
-            fan_status, humidifer_status = control_fan(fan_status, humidifer_status)
+            # fan_status, humidifer_status = control_fan(fan_status, humidifer_status)
             humidifer_status = control_humidifier(humidifer_status, humidity)
             light_status = control_light(light_status)
             
