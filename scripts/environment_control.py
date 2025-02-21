@@ -36,8 +36,8 @@ PATH_OUT = "data/environment/"  # Output folder for data
 LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
 LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
 
-HUMIDITY_LOW = 85.0 # Humidity lower threshold
-HUMIDITY_HIGH = 95.0 # Humidity upper threshold
+HUMIDITY_LOW = 90.0 # Humidity lower threshold
+HUMIDITY_HIGH = 98.0 # Humidity upper threshold
 
 FAN_DURATION = 120  # Duration to keep the fan on, in seconds
 FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
