@@ -83,6 +83,7 @@ def main():
     try:
         while True:
             # Read temperature and humidity
+            maintenance_sensor()
             try:
                 humidity = sht.relative_humidity
                 temperature = sht.temperature
@@ -108,7 +109,7 @@ def main():
             humidifer_status = control_humidifier(humidifer_status, humidity)
             light_status = control_light(light_status)
             
-            time.sleep(10)  # Delay between checks
+            time.sleep(60)  # Delay between checks
 
     # if keyboard interrupt, save data
     except KeyboardInterrupt:
@@ -165,6 +166,13 @@ def init_humidifier():
     humidifer_status = True
 
     return humidifer_status
+
+
+def maintenance_sensor():
+    # Turn on heater breifly to evaporate condensation
+    sht.heater = True
+    time.sleep(1)
+    sht.heater = False
 
 
 def control_humidifier(humidifer_status, humidity):
