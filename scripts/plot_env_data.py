@@ -103,13 +103,22 @@ def plot_sensor_data(datalog, eventlog, axes):
             ax.axvspan(start, end, color='b', alpha=0.3)
 
     # annotate xticks every hour (top of every hour i.e. 1:00, 2:00 etc.)
-    first_hour = datalog['datetime'].min().floor('h')
-    last_hour = datalog['datetime'].max().ceil('h')
-    xticks = pd.date_range(start=first_hour, end=last_hour, freq='h')
-    xtick_labels = [f"{t.hour}:00" for t in xticks]
+    first_day = datalog['datetime'].min().floor('d')
+    last_day = datalog['datetime'].max().floor('d')
+    if last_day == first_day:
+        first_hour = datalog['datetime'].min().floor('h')
+        last_hour = datalog['datetime'].max().ceil('h')
+        xticks = pd.date_range(start=first_hour, end=last_hour, freq='h')
+        xtick_labels = [f"{t.hour}:00" for t in xticks]
+    else:
+        xticks = pd.date_range(start=first_day, end=last_day, freq='d')
+        xtick_labels = [f"{t.month}/{t.day}" for t in xticks]
     axes[2].set_xticks(xticks)
     axes[2].set_xticklabels(xtick_labels)
     axes[2].set_xlabel('Time')
+
+    for ax in axes:
+        ax.set_xlim(datalog['datetime'].min(), datalog['datetime'].max())
 
     # label
     axes[2].set_yticks([0, 1], ['OFF', 'ON'])
