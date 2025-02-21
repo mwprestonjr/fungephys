@@ -55,10 +55,12 @@ def main():
     # create data log files
     if not os.path.exists(PATH_OUT):
         os.makedirs(PATH_OUT)
-    with open(f"{PATH_OUT}/datalog.csv", 'w') as f:
-        f.write("time,temperature,humidity,light\n")
-    with open(f"{PATH_OUT}/eventlog.csv", 'w') as f:
-        f.write("time,command\n")
+    if not os.path.exists(f"{PATH_OUT}/datalog.csv"):
+        with open(f"{PATH_OUT}/datalog.csv", 'w') as f:
+            f.write("time,temperature,humidity,light\n")
+    if not os.path.exists(f"{PATH_OUT}/eventlog.csv"):
+        with open(f"{PATH_OUT}/eventlog.csv", 'w') as f:
+            f.write("time,command\n")
 
     # print settings
     print("\nEnvironment control settings:")
@@ -67,7 +69,6 @@ def main():
     print(f"  Humidity range: [{HUMIDITY_LOW}%, {HUMIDITY_HIGH}%]")
     print(f"  Fan ON duration: {FAN_DURATION} seconds")
     print(f"  Fan interval: {FAN_INTERVAL} seconds")
-    print(f"  Data will be saved to '{PATH_OUT}'")
 
     # print status
     print(f"\nDevices initialized:")
