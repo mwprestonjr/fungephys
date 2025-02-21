@@ -29,7 +29,7 @@ sht = SHT31D(i2c)
 
 # Initialize I2C for Arduino
 bus = smbus2.SMBus(1)
-arduino_address = 0x04
+arduino_address = 0x10
 
 # Control settings
 PATH_OUT = "data/environment/"  # Output folder for data
