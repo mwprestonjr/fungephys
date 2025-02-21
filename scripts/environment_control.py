@@ -114,7 +114,7 @@ def main():
     # if keyboard interrupt, save data
     except KeyboardInterrupt:
         print("\n========= Keyboard interrupt detected =========")
-        shutdown()
+        # shutdown()
         print(f"Find data in '{PATH_OUT}'")
         print("\n==================== END =====================")
         exit(0)
