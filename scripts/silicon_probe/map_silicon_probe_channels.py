@@ -11,6 +11,14 @@ Outputs:
 - Visualization plot saved as PNG file (probe_visualization.png)
 - Additional data saved in NumPy format (probewiring.npy and locations.npy)
 
+Usage:
+# required arguments only
+python map_silicon_probe_channels.py
+
+# with optional arguments
+python map_silicon_probe_channels.py --headstage_source Intan
+--save_path data/silicon_probe/probe_info
+
 """
 
 # imports
