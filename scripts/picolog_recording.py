@@ -115,6 +115,7 @@ for i in range(n_samples):
     )
     value_data = value.value
     V = (float(value_data) / float(max_ADC_Value)) * float(VMAX)
+    save_data.append(V)
     
     if len(save_data) == N_SAMPLES_CHUNK:
         np.savetxt(f"data/recordings/{DIR_OUT}/{count}.txt", save_data, 
@@ -122,8 +123,6 @@ for i in range(n_samples):
         print(f"  Saved chunk {count+1}/{n_chunks}")
         count += 1
         save_data = []
-
-    save_data.append(V)
 
 # Print the elapsed time
 print(f"--- {time.time() - start_time} seconds ---")
