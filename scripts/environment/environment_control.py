@@ -4,9 +4,10 @@ Raspberry Pi with an SHT30 sensor and an Arduino connected via I2C. The script
 reads temperature and humidity from an SHT30 sensor and controls a 
 humidifier, light, and fan using the Arduino. The behavior of the devices is:
 
-- Humidifier: Turns ON when humidity is outside the range [85%, 95%]
 - Light: Turns ON at 8:00 and OFF at 20:00
-- Fan: Turns ON every hour for 2 minutes
+
+NOTE: the script was originally written to control a fan and humidifier also,
+but these features have been commented out.
 
 """
 
@@ -36,8 +37,8 @@ PATH_OUT = "data/environment/"  # Output folder for data
 LIGHT_ON_TIME = 8  # Light ON time (24-hour format)
 LIGHT_OFF_TIME = 20  # Light OFF time (24-hour format)
 
-HUMIDITY_LOW = 90.0 # Humidity lower threshold
-HUMIDITY_HIGH = 98.0 # Humidity upper threshold
+# HUMIDITY_LOW = 90.0 # Humidity lower threshold
+# HUMIDITY_HIGH = 98.0 # Humidity upper threshold
 
 # FAN_DURATION = 120  # Duration to keep the fan on, in seconds
 # FAN_INTERVAL = 3600  # Interval between fan runs, in seconds
@@ -50,7 +51,7 @@ def main():
     # init sensors and devices
     light_status = init_light()
     # fan_status = init_fan()
-    humidifer_status = init_humidifier()
+    # humidifer_status = init_humidifier()
 
     # create data log files
     if not os.path.exists(PATH_OUT):
@@ -66,7 +67,7 @@ def main():
     print("\nEnvironment control settings:")
     print(f"  Light ON time: {LIGHT_ON_TIME}:00")
     print(f"  Light OFF time: {LIGHT_OFF_TIME}:00")
-    print(f"  Humidity range: [{HUMIDITY_LOW}%, {HUMIDITY_HIGH}%]")
+    # print(f"  Humidity range: [{HUMIDITY_LOW}%, {HUMIDITY_HIGH}%]")
     # print(f"  Fan ON duration: {FAN_DURATION} seconds")
     # print(f"  Fan interval: {FAN_INTERVAL} seconds")
 
@@ -74,7 +75,7 @@ def main():
     print(f"\nDevices initialized:")
     print(f"  Light: {'ON' if light_status else 'OFF'}")
     # print(f"  Fan: {'ON' if fan_status['status'] else 'OFF'}")
-    print(f"  Humidifier: {'ON' if humidifer_status else 'OFF'}")
+    # print(f"  Humidifier: {'ON' if humidifer_status else 'OFF'}")
     print(f"\nData log files created at '{PATH_OUT}'")
 
     # print status
@@ -106,7 +107,7 @@ def main():
 
             # Control devices
             # fan_status, humidifer_status = control_fan(fan_status, humidifer_status)
-            humidifer_status = control_humidifier(humidifer_status, humidity)
+            # humidifer_status = control_humidifier(humidifer_status, humidity)
             light_status = control_light(light_status)
             
             time.sleep(60)  # Delay between checks
