@@ -10,21 +10,26 @@ Originally adapted from: PicoTech, https://github.com/picotech/picosdk-python-wr
 """
 
 # SETTINGS #####################################################################
-DIR_OUT = "20240924" # Output folder within data/recordings
-DT = 100 # Sampling frequency in milliseconds)
-CHANNEL = 9 # Channel to record from - script written for diferential recording so this is the odd-numbered channel
-N_SAMPLES = 6000 # Number of samples to record
+DIR_OUT = "20250127_control" # Output folder within data/recordings
+DT = 100 # Sampling frequency in milliseconds
+CHANNEL = 3 # Channel to record from - script written for differential recording so this is the odd-numbered channel
+DURATION = 60 * 10 # Duration of recording in seconds
 N_SAMPLES_CHUNK = 300 # Number of samples to record before saving to file
 VMAX = 39000  # Maximum voltage in microvolts (Mishra et al. 2024 used 39000)
 VOLTAGE_RANGE = 39 # Voltage range in millivolts (see function voltage_key below for options)
+
+fs = int(1000 / DT)
+n_samples = int(DURATION *fs)
+n_chunks = int(n_samples / N_SAMPLES_CHUNK)
 
 # Print settings
 print("\nRecording settings:")
 print(f"  Recording from channel {CHANNEL} in differential mode")
 print(f"  Voltage range: {VOLTAGE_RANGE} mV")
-print(f"  Recording {N_SAMPLES} samples in chunks of {N_SAMPLES_CHUNK}")
-print(f"  Total recording time: {N_SAMPLES * (DT/1000)} seconds")
-print(f"  Saving data to data/recordings/{DIR_OUT}")
+print(f"  Sampling frequency: {fs} Hz ({DT} ms intervals)")
+print(f"  Total recording time: {DURATION} seconds")
+print(f"  Saving to data/recordings/{DIR_OUT}")
+print(f"  Saving {N_SAMPLES_CHUNK} samples per file ({n_chunks} files total)")
 
 # SET-UP #######################################################################
 print("\nSetting up data logger...")
@@ -72,7 +77,7 @@ status["disableDifferentialChannel"] = \
     hrdl.HRDLSetAnalogInChannel(chandle, CHANNEL, 1, 
                                 voltage_key(VOLTAGE_RANGE), 0)
 
-# Compute voltage scaling #####################################################
+# Compute voltage scaling ######################################################
 # print("\nComputing voltage scaling...")
 
 # Set single reading parameters
@@ -103,7 +108,7 @@ count = 0
 
 # Collect and save data in chunks of 300 samples
 print("\nRecording data...")
-for i in range(N_SAMPLES):
+for i in range(n_samples):
     status["getSingleValue"] = hrdl.HRDLGetSingleValue(
         chandle, CHANNEL, range_, conversionTime, 0, ctypes.byref(overflow), 
         ctypes.byref(value)
@@ -111,10 +116,10 @@ for i in range(N_SAMPLES):
     value_data = value.value
     V = (float(value_data) / float(max_ADC_Value)) * float(VMAX)
     
-    if (i + 1) % N_SAMPLES_CHUNK == 0:
+    if len(save_data) == N_SAMPLES_CHUNK:
         np.savetxt(f"data/recordings/{DIR_OUT}/{count}.txt", save_data, 
                    delimiter=',')
-        print(f"  Saved chunk {count} at sample {i+1}")
+        print(f"  Saved chunk {count+1}/{n_chunks}")
         count += 1
         save_data = []
 
