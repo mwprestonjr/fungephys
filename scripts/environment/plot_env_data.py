@@ -29,7 +29,7 @@ def main():
 
     # plot
     datalog, eventlog = import_data(path)
-    fig, axes = init_fig()
+    fig, axes = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
     plot_sensor_data(datalog, eventlog, axes)
     anim = FuncAnimation(fig, update_plot, interval=INTERVAL, fargs=(path, axes),
                             cache_frame_data=False)
@@ -37,6 +37,11 @@ def main():
 
 
 def update_plot(frame, path, axes):
+    # clear current plot
+    for ax in axes:
+        ax.clear()
+
+    # load latest data and plot
     datalog, eventlog = import_data(path)
     plot_sensor_data(datalog, eventlog, axes)
 
@@ -123,14 +128,6 @@ def plot_sensor_data(datalog, eventlog, axes):
     # label
     axes[2].set_yticks([0, 1], ['OFF', 'ON'])
 
-    # format and show
-    plt.tight_layout()
-
-
-def init_fig():
-    # create figure
-    fig, axes = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
-
     # color background of ideal ranges
     axes[0].axhspan(65, 75, color='g', alpha=0.2)
     axes[0].axhspan(60, 65, color='y', alpha=0.2)
@@ -143,7 +140,8 @@ def init_fig():
     axes[2].axhspan(-0.5, 0.5, color='grey', alpha=0.2)
     axes[2].axhspan(0.5, 1.5, color='grey', alpha=0.1)
 
-    return fig, axes
+    # format and show
+    plt.tight_layout()
 
 
 if __name__ == "__main__":
