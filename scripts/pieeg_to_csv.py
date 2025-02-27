@@ -7,15 +7,14 @@ Record data from PiEEG-16 and write to CSV
 # ========================== Settings ==========================
 
 FNAME_OUT = 'data/recordings/pieeg_test_data.csv'
-N_SAMPLES = 100
-DT = 0.1  # seconds
-
+DURATION = 60 * 60  # seconds
+FS = 100  # Hz
+GAIN = 24 # signal gain (1, 2, 4, 6, 8, 12, or 24)
 
 # ========================== Setup ==========================
 
 # imports
 import numpy as np
-import pandas as pd
 import spidev
 from datetime import datetime
 from RPi import GPIO
@@ -129,6 +128,25 @@ def get_voltage(output, a, data_check, data_test):
 
     return voltage
 
+def convert_gain(value):
+# convert to bits
+    if value == 1:
+        return 0b000
+    elif value == 2:
+        return 0b001
+    elif value == 4:
+        return 0b010
+    elif value == 6:
+        return 0b011
+    elif value == 8:
+        return 0b100
+    elif value == 12:
+        return 0b101
+    elif value == 24:
+        return 0b110
+    else:
+        raise ValueError("Invalid gain value. Please use 1, 2, 4, 6, 8, 12, or 24.")
+
 
 # ========================== Init ==========================
 
@@ -151,14 +169,15 @@ write_byte (0x11, 0x00)
 write_byte (0x15, 0x20)
 
 write_byte (0x17, 0x00)
-write_byte (ch1set, 0x00)
-write_byte (ch2set, 0x00)
-write_byte (ch3set, 0x00)
-write_byte (ch4set, 0x00)
-write_byte (ch5set, 0x00)
-write_byte (ch6set, 0x00)
-write_byte (ch7set, 0x00)
-write_byte (ch8set, 0x00)
+gain = convert_gain(GAIN)
+write_byte (ch1set, gain)
+write_byte (ch2set, gain)
+write_byte (ch3set, gain)
+write_byte (ch4set, gain)
+write_byte (ch5set, gain)
+write_byte (ch6set, gain)
+write_byte (ch7set, gain)
+write_byte (ch8set, gain)
 
 send_command (rdatac)
 send_command (start)
@@ -182,14 +201,14 @@ write_byte_2 (0x11, 0x00)
 write_byte_2 (0x15, 0x20)
 
 write_byte_2 (0x17, 0x00)
-write_byte_2 (ch1set, 0x00)
-write_byte_2 (ch2set, 0x00)
-write_byte_2 (ch3set, 0x00)
-write_byte_2 (ch4set, 0x00)
-write_byte_2 (ch5set, 0x00)
-write_byte_2 (ch6set, 0x00)
-write_byte_2 (ch7set, 0x00)
-write_byte_2 (ch8set, 0x00)
+write_byte_2 (ch1set, gain)
+write_byte_2 (ch2set, gain)
+write_byte_2 (ch3set, gain)
+write_byte_2 (ch4set, gain)
+write_byte_2 (ch5set, gain)
+write_byte_2 (ch6set, gain)
+write_byte_2 (ch7set, gain)
+write_byte_2 (ch8set, gain)
 
 send_command_2 (rdatac)
 send_command_2 (start)
@@ -201,7 +220,7 @@ send_command_2 (start)
 print("Recording data...")
 
 # initialize csv
-columns = "time, chan_1, chan_2, chan_3, chan_4, chan_5, chan_6, chan_7, chan_8, chan_9, chan_10, chan_11, chan_12, chan_13, chan_14, chan_15, chan_16\n"
+columns = "time,chan_1,chan_2,chan_3,chan_4,chan_5,chan_6,chan_7,chan_8,chan_9,chan_10,chan_11,chan_12,chan_13,chan_14,chan_15,chan_16\n"
 with open(FNAME_OUT, 'w') as f:
     f.write(columns)
 
@@ -209,10 +228,10 @@ with open(FNAME_OUT, 'w') as f:
 start_time = datetime.now()
 
 # main loop
-for i_sample in range(N_SAMPLES):
+for i_sample in range(DURATION * FS):
     # wait for sample time
-    if (datetime.now()-start_time).total_seconds() < (i_sample*DT):
-        sleep((i_sample*DT)-(datetime.now()-start_time).total_seconds())
+    if (datetime.now()-start_time).total_seconds() < (i_sample/FS):
+        sleep((i_sample/FS)-(datetime.now()-start_time).total_seconds())
     timepoint = (datetime.now()-start_time).total_seconds()
 
     # read data
